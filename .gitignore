@@ -1,0 +1,48 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+.eggs/
+
+# Virtual environments
+.venv/
+venv/
+env/
+
+# pytest / test artifacts
+.pytest_cache/
+.cache/
+*.log
+htmlcov/
+.coverage
+coverage.xml
+
+# Docker build cache / local test artifacts
+.docker/
+*.tar
+
+# Editor / OS
+.DS_Store
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+Thumbs.db
+
+# Local secrets / generated keys (never commit real keys)
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Verifier output (generated at runtime inside containers)
+/logs/
+ctrf.json
+reward.txt

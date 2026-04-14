@@ -1,0 +1,48 @@
+[metadata]
+author_name = "Dinesh Keserla"
+author_email = ""
+category = "security"
+tags = ["jwt", "algorithm-confusion", "flask", "cryptography", "exploit", "penetration-testing"]
+
+difficulty_explanation = """
+Requires reading and tracing execution through deliberately obfuscated Python source code
+to identify a JWT algorithm confusion vulnerability (CVE-2015-9235 class): the HS256
+verification path (`_verify_hmac_compat`) uses the RSA public key PEM as the HMAC-SHA256
+secret instead of rejecting the algorithm. The agent must: (1) recognize the vulnerability
+without being told it exists, (2) retrieve the RSA public key from /public-key, (3) forge
+a valid HS256 JWT with admin claims signed using the public key PEM as the HMAC secret,
+and (4) call /promote with the correct headers and body. The dispatch through
+_VERIFIER_DISPATCH and misleading "legacy compatibility" comments obscure the bug.
+Requires professional-level knowledge of JWT internals, HMAC vs RSA signature mechanics,
+and REST API interaction.
+"""
+
+solution_explanation = """
+1. GET /public-key and save the PEM to /tmp/pub_key.pem.
+2. Read auth.py: _verify_hmac_compat decodes HS256 tokens using load_public_key_pem()
+   (the RSA public key) as the HMAC secret — a classic algorithm confusion vulnerability.
+3. Forge an admin JWT: jwt.encode({sub: attacker, role: admin, iat: now, iss: auth-service-v2},
+   open('/tmp/pub_key.pem').read(), algorithm='HS256') using PyJWT.
+4. POST /promote with Authorization: Bearer <forged_token> and body {"username": "bob"}.
+5. Verify with GET /users that bob's role is now admin.
+"""
+
+verification_explanation = """
+test_state.py reads /app/db.json and asserts users.bob.role == 'admin'. It also reads
+/app/access.log and requires a 'POST /promote SUCCESS' entry to confirm the HTTP route
+was used rather than direct file manipulation. A final live API check via curl /users
+provides a second independent confirmation.
+"""
+
+[verifier]
+timeout_sec = 120.0
+
+[agent]
+timeout_sec = 1800.0
+
+[environment]
+build_timeout_sec = 180.0
+cpus = 1.0
+memory_mb = 512
+storage_mb = 1024
+gpus = 0

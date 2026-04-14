@@ -1,0 +1,42 @@
+[metadata]
+author_name = "Dinesh Keserla"
+author_email = ""
+category = "cryptography"
+tags = ["jwt", "base64", "json", "data-transformation", "python"]
+
+difficulty_explanation = """
+Requires understanding JWT structure (three-part base64url encoding), handling multiple
+algorithm variants (HS256, RS256, alg:none), conditional filtering on payload fields,
+converting Unix timestamps to ISO 8601 UTC strings, stripping fields by name prefix,
+sorting a list of objects by a nested field, and serializing to pretty-printed JSON.
+An experienced developer familiar with JWTs and Python will solve this in under 20 minutes;
+a novice may not know how to decode without signature verification, may misformat timestamps,
+or may miss the padding requirement for base64url decoding.
+"""
+
+solution_explanation = """
+Split each token on '.', base64url-decode the second segment (add padding as needed),
+parse as JSON. Filter to entries where process==true. For each: convert iat/exp/nbf
+integer values to datetime.fromtimestamp(v, tz=timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ'),
+drop keys starting with '_internal_'. Sort by sub. Write with json.dump(indent=2).
+"""
+
+verification_explanation = """
+test_state.py loads /app/claims.json, asserts it is a JSON array of exactly 2 entries
+(the two process=true tokens), checks each entry's sub field, verifies all timestamp
+fields are ISO 8601 strings with correct values, confirms no _internal_ keys remain,
+and checks alphabetical sort order (alice before bob). carol (process=false) must be absent.
+"""
+
+[verifier]
+timeout_sec = 60.0
+
+[agent]
+timeout_sec = 600.0
+
+[environment]
+build_timeout_sec = 120.0
+cpus = 1.0
+memory_mb = 512
+storage_mb = 1024
+gpus = 0

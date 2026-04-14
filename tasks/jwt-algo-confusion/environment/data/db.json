@@ -1,0 +1,14 @@
+{
+  "users": {
+    "bob": {
+      "role": "user"
+    },
+    "admin": {
+      "role": "admin"
+    }
+  },
+  "credentials": {
+    "bob": "hunter2",
+    "admin": "s3cr3t_4dm1n_p@ss_n0t_gu3ss4bl3"
+  }
+}

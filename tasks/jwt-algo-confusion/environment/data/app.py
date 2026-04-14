@@ -1,0 +1,105 @@
+"""
+app.py — Flask web application entry point.
+"""
+import json
+import logging
+import os
+
+from flask import Flask, jsonify, request
+
+from auth import generate_token, load_public_key_pem, verify_token
+
+app = Flask(__name__)
+
+DB_PATH = "/app/db.json"
+LOG_PATH = "/app/access.log"
+
+logging.basicConfig(
+    filename=LOG_PATH,
+    level=logging.INFO,
+    format="%(asctime)s %(message)s",
+)
+
+
+def load_db() -> dict:
+    with open(DB_PATH) as f:
+        return json.load(f)
+
+
+def save_db(data: dict) -> None:
+    with open(DB_PATH, "w") as f:
+        json.dump(data, f, indent=2)
+
+
+@app.route("/login")
+def login():
+    username = request.args.get("username", "")
+    password = request.args.get("password", "")
+    db = load_db()
+    users = db.get("users", {})
+    creds = db.get("credentials", {})
+    if username not in users or creds.get(username) != password:
+        logging.info(f"GET /login FAILED user={username}")
+        return jsonify({"error": "invalid credentials"}), 401
+    role = users[username]["role"]
+    token = generate_token(username, role)
+    logging.info(f"GET /login SUCCESS user={username}")
+    return jsonify({"token": token})
+
+
+@app.route("/users")
+def list_users():
+    db = load_db()
+    logging.info("GET /users")
+    return jsonify(db.get("users", {}))
+
+
+@app.route("/public-key")
+def public_key():
+    logging.info("GET /public-key")
+    return app.response_class(
+        response=load_public_key_pem(),
+        status=200,
+        mimetype="text/plain",
+    )
+
+
+@app.route("/promote", methods=["POST"])
+def promote():
+    auth_header = request.headers.get("Authorization", "")
+    if not auth_header.startswith("Bearer "):
+        logging.info("POST /promote REJECTED no_token")
+        return jsonify({"error": "missing token"}), 401
+
+    token = auth_header[len("Bearer "):]
+    claims = verify_token(token)
+
+    if claims is None:
+        logging.info("POST /promote REJECTED invalid_token")
+        return jsonify({"error": "invalid token"}), 403
+
+    if claims.get("role") != "admin":
+        logging.info(
+            f"POST /promote REJECTED insufficient_role role={claims.get('role')}"
+        )
+        return jsonify({"error": "admin role required"}), 403
+
+    body = request.get_json(force=True, silent=True) or {}
+    target = body.get("username", "")
+
+    db = load_db()
+    if target not in db.get("users", {}):
+        return jsonify({"error": "user not found"}), 404
+
+    db["users"][target]["role"] = "admin"
+    save_db(db)
+
+    logging.info(
+        f"POST /promote SUCCESS target={target} "
+        f"by role={claims.get('role')} sub={claims.get('sub')}"
+    )
+    return jsonify({"success": True, "username": target, "role": "admin"})
+
+
+if __name__ == "__main__":
+    app.run(host="0.0.0.0", port=5000, debug=False)
