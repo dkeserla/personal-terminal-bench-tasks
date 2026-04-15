@@ -8,12 +8,11 @@ A Flask web application is running at `http://localhost:5000`.
 |--------|------|-------------|
 | `GET` | `/login?username=<u>&password=<p>` | Authenticate and receive a JWT |
 | `GET` | `/users` | List all users and their current roles (public) |
-| `GET` | `/public-key` | Return the server's RSA public key in PEM format |
-| `POST` | `/promote` | Promote a user to admin (requires admin JWT) |
+| `POST` | `/forgot-password` | Initiate a password reset; body: `{"username": "<user>"}` |
+| `POST` | `/reset-password` | Complete a reset; body: `{"username": "<user>", "token": "<token>", "new_password": "<pw>"}` |
+| `POST` | `/promote` | Promote a user to admin (requires admin JWT); body: `{"username": "<user>"}` |
 
-The `/promote` endpoint expects:
-- Header: `Authorization: Bearer <token>`
-- Body: `{"username": "<target_username>"}`
+The `/promote` endpoint expects an `Authorization: Bearer <token>` header.
 
 ## Known Credentials
 

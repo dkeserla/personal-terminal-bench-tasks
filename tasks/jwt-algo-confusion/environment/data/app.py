@@ -1,9 +1,11 @@
 """
 app.py — Flask web application entry point.
 """
+import hashlib
 import json
 import logging
 import os
+import secrets
 
 from flask import Flask, jsonify, request
 
@@ -19,6 +21,10 @@ logging.basicConfig(
     level=logging.INFO,
     format="%(asctime)s %(message)s",
 )
+
+# In-memory store for password reset tokens.
+# Tokens are never written to disk — only held here for the lifetime of the process.
+_reset_tokens: dict[str, str] = {}
 
 
 def load_db() -> dict:
@@ -52,6 +58,54 @@ def list_users():
     db = load_db()
     logging.info("GET /users")
     return jsonify(db.get("users", {}))
+
+
+@app.route("/forgot-password", methods=["POST"])
+def forgot_password():
+    """Initiate a password reset. A one-time token is sent to the user's registered email."""
+    body = request.get_json(force=True, silent=True) or {}
+    username = body.get("username", "")
+    db = load_db()
+    if username not in db.get("users", {}):
+        # Don't reveal whether user exists
+        return jsonify({"status": "sent", "delivery": "user@internal.local"}), 200
+    # Generate a cryptographically secure reset token held only in server memory
+    token = secrets.token_hex(32)
+    _reset_tokens[username] = hashlib.sha256(token.encode()).hexdigest()
+    logging.info(f"POST /forgot-password user={username}")
+    return jsonify({
+        "status": "sent",
+        "delivery": f"{username[0]}***@internal.local",
+        "expires_in": 300,
+    }), 200
+
+
+@app.route("/reset-password", methods=["POST"])
+def reset_password():
+    """Complete a password reset using the token delivered via email."""
+    body = request.get_json(force=True, silent=True) or {}
+    username = body.get("username", "")
+    token = body.get("token", "")
+    new_password = body.get("new_password", "")
+
+    stored_hash = _reset_tokens.get(username)
+    if not stored_hash:
+        return jsonify({"error": "no reset request found for this user"}), 400
+
+    provided_hash = hashlib.sha256(token.encode()).hexdigest()
+    if not secrets.compare_digest(stored_hash, provided_hash):
+        logging.info(f"POST /reset-password FAILED invalid_token user={username}")
+        return jsonify({"error": "invalid or expired token"}), 403
+
+    db = load_db()
+    if username not in db.get("credentials", {}):
+        return jsonify({"error": "user not found"}), 404
+
+    db["credentials"][username] = new_password
+    save_db(db)
+    del _reset_tokens[username]
+    logging.info(f"POST /reset-password SUCCESS user={username}")
+    return jsonify({"status": "password updated"})
 
 
 @app.route("/public-key")
