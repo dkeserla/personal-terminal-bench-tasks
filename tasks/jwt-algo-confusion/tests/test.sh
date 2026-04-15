@@ -3,7 +3,7 @@ set -euo pipefail
 
 mkdir -p /logs/verifier
 
-pip3 install pytest pytest-json-ctrf --quiet --break-system-packages 2>/dev/null || true
+pip3 install pytest pytest-json-report --quiet --break-system-packages 2>/dev/null || true
 
 # Give Flask a moment to be ready if it just started
 for i in $(seq 1 15); do

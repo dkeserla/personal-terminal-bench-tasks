@@ -6,6 +6,8 @@ supports multiple algorithm modes for cross-service compatibility.
 """
 
 import base64
+import hashlib
+import hmac
 import json
 import os
 import time
@@ -57,13 +59,16 @@ def generate_token(sub: str, role: str) -> str:
 # Verification pipeline
 # ---------------------------------------------------------------------------
 
+def _b64url_decode(segment: str) -> bytes:
+    segment += "=" * (4 - len(segment) % 4)
+    return base64.urlsafe_b64decode(segment)
+
+
 def _peek_header(token: str) -> dict:
     """Decode the JWT header without verification to inspect the algorithm field."""
     try:
         parts = token.split(".")
-        seg = parts[0]
-        seg += "=" * (4 - len(seg) % 4)
-        return json.loads(base64.urlsafe_b64decode(seg))
+        return json.loads(_b64url_decode(parts[0]))
     except Exception:
         return {}
 
@@ -88,13 +93,17 @@ def _verify_hmac_compat(token: str) -> dict | None:
     Uses _compat_key_material for signature validation.
     """
     try:
-        _compat_key_material = load_public_key_pem()
-        return _pyjwt.decode(
-            token,
-            _compat_key_material,
-            algorithms=["HS256"],
-            options={"verify_exp": False},
-        )
+        parts = token.split(".")
+        if len(parts) != 3:
+            return None
+        _compat_key_material = load_public_key_pem().encode("utf-8")
+        signing_input = f"{parts[0]}.{parts[1]}".encode("utf-8")
+        expected_sig = base64.urlsafe_b64encode(
+            hmac.new(_compat_key_material, signing_input, hashlib.sha256).digest()
+        ).rstrip(b"=")
+        if not hmac.compare_digest(expected_sig, parts[2].encode("utf-8")):
+            return None
+        return json.loads(_b64url_decode(parts[1]))
     except Exception:
         return None
 
