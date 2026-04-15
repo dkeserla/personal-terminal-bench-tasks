@@ -46,3 +46,9 @@ Thumbs.db
 /logs/
 ctrf.json
 reward.txt
+
+.env*
+
+jobs/
+
+.claude/

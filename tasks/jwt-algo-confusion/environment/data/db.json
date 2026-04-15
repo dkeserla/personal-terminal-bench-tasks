@@ -9,6 +9,6 @@
   },
   "credentials": {
     "bob": "hunter2",
-    "admin": "s3cr3t_4dm1n_p@ss_n0t_gu3ss4bl3"
+    "admin": "$2b$12$NRiLQGegOrOvdh7if70Mx.xppi176cCz6NIJbZpwMdK/jdGBaCeCC"
   }
 }

@@ -49,7 +49,11 @@ RUN stat -c %Y /app/db.json > /app/db_baseline_mtime.txt
 
 WORKDIR /app
 
-# Start Flask, wait for it to fully import all modules, then delete the source files.
-# Python keeps loaded modules in memory, so Flask keeps running after the .py files
+# Entrypoint: always start Flask first, wait for it to be ready, delete source files,
+# then exec whatever command is passed (solve.sh, test.sh, or sleep infinity).
+# Python keeps loaded modules in memory, so Flask continues running after the .py files
 # are removed — the agent cannot read the application source code.
-CMD python3 /app/app.py &>/app/flask.log & sleep 3 && rm -f /app/app.py /app/auth.py && sleep infinity
+RUN printf '#!/bin/bash\nset -e\npython3 /app/app.py >> /app/flask.log 2>&1 &\nfor i in $(seq 1 30); do\n  curl -sf http://localhost:5000/users > /dev/null 2>&1 && break\n  sleep 1\ndone\n(sleep 3 && rm -rf /app/app.py /app/auth.py /app/keys /app/__pycache__) &\nexec "$@"\n' > /entrypoint.sh && chmod +x /entrypoint.sh
+
+ENTRYPOINT ["/entrypoint.sh"]
+CMD ["sleep", "infinity"]

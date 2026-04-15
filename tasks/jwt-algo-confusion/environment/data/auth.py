@@ -23,22 +23,29 @@ _PUB_KEY_PATH = os.path.join(_KEY_DIR, "public.pem")
 _ISSUER = "auth-service-v2"
 _TOKEN_TTL = 3600
 
+# Cache key material in memory at import time so the key files can be deleted
+# from disk without affecting runtime behaviour.
+with open(_PRIV_KEY_PATH, "rb") as _f:
+    _CACHED_PRIVATE_KEY = serialization.load_pem_private_key(
+        _f.read(), password=None, backend=default_backend()
+    )
+with open(_PUB_KEY_PATH, "rb") as _f:
+    _CACHED_PUBLIC_KEY_PEM: str = _f.read().decode()
+    _CACHED_PUBLIC_KEY_OBJ = serialization.load_pem_public_key(
+        _CACHED_PUBLIC_KEY_PEM.encode(), backend=default_backend()
+    )
+
 
 def _load_private_key():
-    with open(_PRIV_KEY_PATH, "rb") as f:
-        return serialization.load_pem_private_key(
-            f.read(), password=None, backend=default_backend()
-        )
+    return _CACHED_PRIVATE_KEY
 
 
 def load_public_key_pem() -> str:
-    with open(_PUB_KEY_PATH, "rb") as f:
-        return f.read().decode()
+    return _CACHED_PUBLIC_KEY_PEM
 
 
 def _load_public_key_obj():
-    with open(_PUB_KEY_PATH, "rb") as f:
-        return serialization.load_pem_public_key(f.read(), backend=default_backend())
+    return _CACHED_PUBLIC_KEY_OBJ
 
 
 def generate_token(sub: str, role: str) -> str:

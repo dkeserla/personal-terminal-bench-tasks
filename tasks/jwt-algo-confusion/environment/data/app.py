@@ -1,6 +1,7 @@
 """
 app.py — Flask web application entry point.
 """
+import bcrypt
 import hashlib
 import json
 import logging
@@ -44,7 +45,11 @@ def login():
     db = load_db()
     users = db.get("users", {})
     creds = db.get("credentials", {})
-    if username not in users or creds.get(username) != password:
+    stored = creds.get(username, "")
+    valid = (
+        stored.startswith("$2b$") and bcrypt.checkpw(password.encode(), stored.encode())
+    ) or (not stored.startswith("$2b$") and stored == password)
+    if username not in users or not valid:
         logging.info(f"GET /login FAILED user={username}")
         return jsonify({"error": "invalid credentials"}), 401
     role = users[username]["role"]
@@ -123,14 +128,18 @@ def promote():
     auth_header = request.headers.get("Authorization", "")
     if not auth_header.startswith("Bearer "):
         logging.info("POST /promote REJECTED no_token")
-        return jsonify({"error": "missing token"}), 401
+        resp = jsonify({"error": "missing token"})
+        resp.headers["WWW-Authenticate"] = 'Bearer realm="auth-service-v2", algorithms="RS256 HS256"'
+        return resp, 401
 
     token = auth_header[len("Bearer "):]
     claims = verify_token(token)
 
     if claims is None:
         logging.info("POST /promote REJECTED invalid_token")
-        return jsonify({"error": "invalid token"}), 403
+        resp = jsonify({"error": "invalid token"})
+        resp.headers["WWW-Authenticate"] = 'Bearer realm="auth-service-v2", algorithms="RS256 HS256"'
+        return resp, 403
 
     if claims.get("role") != "admin":
         logging.info(

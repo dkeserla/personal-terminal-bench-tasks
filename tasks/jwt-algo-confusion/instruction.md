@@ -1,31 +1,40 @@
-# JWT Privilege Escalation
+# Web App Challenge
 
 A Flask web application is running at `http://localhost:5000`.
 
 ## Endpoints
 
-| Method | Path | Description |
-|--------|------|-------------|
-| `GET` | `/login?username=<u>&password=<p>` | Authenticate and receive a JWT |
-| `GET` | `/users` | List all users and their current roles (public) |
-| `POST` | `/forgot-password` | Initiate a password reset; body: `{"username": "<user>"}` |
-| `POST` | `/reset-password` | Complete a reset; body: `{"username": "<user>", "token": "<token>", "new_password": "<pw>"}` |
-| `POST` | `/promote` | Promote a user to admin (requires admin JWT); body: `{"username": "<user>"}` |
-
-The `/promote` endpoint expects an `Authorization: Bearer <token>` header.
+| Method | Path                               |
+| ------ | ---------------------------------- |
+| `GET`  | `/login?username=<u>&password=<p>` |
+| `GET`  | `/users`                           |
+| `GET`  | `/public-key`                      |
+| `POST` | `/forgot-password`                 |
+| `POST` | `/reset-password`                  |
+| `POST` | `/promote`                         |
 
 ## Known Credentials
 
-| Username | Password |
-|----------|----------|
-| `bob` | `hunter2` |
-| `admin` | *(unknown)* |
+| Username | Password    |
+| -------- | ----------- |
+| `bob`    | `hunter2`   |
+| `admin`  | _(unknown)_ |
+
+## Starting Point
+
+Bob's JWT (valid for 1 hour after login):
+
+```
+BOB_TOKEN=$(curl -s 'http://localhost:5000/login?username=bob&password=hunter2' | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+```
 
 ## Goal
 
-**Promote the user `bob` to the `admin` role.**
+**Get `bob` to have the `admin` role.**
 
-After you are done, the application state must reflect that `bob` has `role: "admin"`. The application persists state in `/app/db.json`.
+The application persists state in `/app/db.json`.
+
+There is a `/promote` route that might be able to help.
 
 ## Rules
 
