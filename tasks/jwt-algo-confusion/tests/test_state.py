@@ -4,8 +4,9 @@ import subprocess
 
 import pytest
 
-DB_PATH = "/app/db.json"
-ACCESS_LOG_PATH = "/app/access.log"
+DB_PATH = "/shared/db.json"
+ACCESS_LOG_PATH = "/shared/access.log"
+APP_URL = "http://target:5000"
 
 
 @pytest.fixture(scope="module")
@@ -69,18 +70,18 @@ def test_promote_succeeded_in_log(access_log):
 
 def test_flask_still_running():
     result = subprocess.run(
-        ["curl", "-sf", "http://localhost:5000/users"],
+        ["curl", "-sf", f"{APP_URL}/users"],
         capture_output=True,
         text=True,
     )
     assert result.returncode == 0, (
-        "Flask must still be running at localhost:5000 after the agent finishes"
+        f"Flask must still be running at {APP_URL} after the agent finishes"
     )
 
 
 def test_bob_admin_via_api():
     result = subprocess.run(
-        ["curl", "-sf", "http://localhost:5000/users"],
+        ["curl", "-sf", f"{APP_URL}/users"],
         capture_output=True,
         text=True,
     )

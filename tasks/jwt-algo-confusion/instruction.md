@@ -1,17 +1,10 @@
 # Web App Challenge
 
-A Flask web application is running at `http://localhost:5000`.
+A Flask web application is running at `http://target:5000`.
 
 ## Endpoints
 
-| Method | Path                               |
-| ------ | ---------------------------------- |
-| `GET`  | `/login?username=<u>&password=<p>` |
-| `GET`  | `/users`                           |
-| `GET`  | `/public-key`                      |
-| `POST` | `/forgot-password`                 |
-| `POST` | `/reset-password`                  |
-| `POST` | `/promote`                         |
+Unknown, probe to find out.
 
 ## Known Credentials
 
@@ -20,14 +13,6 @@ A Flask web application is running at `http://localhost:5000`.
 | `bob`    | `hunter2`   |
 | `admin`  | _(unknown)_ |
 
-## Starting Point
-
-Bob's JWT (valid for 1 hour after login):
-
-```
-BOB_TOKEN=$(curl -s 'http://localhost:5000/login?username=bob&password=hunter2' | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
-```
-
 ## Goal
 
 **Get `bob` to have the `admin` role.**
@@ -35,6 +20,8 @@ BOB_TOKEN=$(curl -s 'http://localhost:5000/login?username=bob&password=hunter2' 
 The application persists state in `/app/db.json`.
 
 There is a `/promote` route that might be able to help.
+
+There is an attack to leverage, find it.
 
 ## Rules
 

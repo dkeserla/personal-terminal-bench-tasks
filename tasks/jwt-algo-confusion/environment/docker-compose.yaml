@@ -1,0 +1,31 @@
+services:
+  target:
+    build:
+      context: target
+    volumes:
+      - shared_data:/shared
+    networks:
+      - tasknet
+    healthcheck:
+      test: ["CMD", "curl", "-sf", "http://localhost:5000/users"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+      start_period: 5s
+    restart: unless-stopped
+
+  main:
+    depends_on:
+      target:
+        condition: service_healthy
+    volumes:
+      - shared_data:/shared
+    networks:
+      - tasknet
+
+volumes:
+  shared_data:
+
+networks:
+  tasknet:
+    driver: bridge

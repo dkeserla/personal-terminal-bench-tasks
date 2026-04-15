@@ -14,8 +14,8 @@ from auth import generate_token, load_public_key_pem, verify_token
 
 app = Flask(__name__)
 
-DB_PATH = "/app/db.json"
-LOG_PATH = "/app/access.log"
+DB_PATH = "/shared/db.json"
+LOG_PATH = "/shared/access.log"
 
 logging.basicConfig(
     filename=LOG_PATH,
