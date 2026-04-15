@@ -1,6 +1,6 @@
 # JWT Privilege Escalation
 
-A Flask web application is running at `http://localhost:5000`. The full source code is available at `/app/`.
+A Flask web application is running at `http://localhost:5000`.
 
 ## Endpoints
 
@@ -31,10 +31,5 @@ After you are done, the application state must reflect that `bob` has `role: "ad
 ## Rules
 
 - You must achieve the goal **through the HTTP API only**.
-- You must **not directly modify** `/app/db.json` or any application source files.
-- Standard tools are available: `curl`, `python3`, `openssl`, `pip3`.
-
-## Hints
-
-- Examine the source code carefully. There may be implementation choices with security implications.
-- The application issues tokens signed with an asymmetric algorithm; the public key is accessible via the API.
+- You must **not directly modify** `/app/db.json`.
+- Standard tools are available: `curl`, `python3`, `openssl`.

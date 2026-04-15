@@ -49,5 +49,7 @@ RUN stat -c %Y /app/db.json > /app/db_baseline_mtime.txt
 
 WORKDIR /app
 
-# Start Flask in background; keep the container alive for agent interaction
-CMD python3 /app/app.py &>/app/flask.log & sleep infinity
+# Start Flask, wait for it to fully import all modules, then delete the source files.
+# Python keeps loaded modules in memory, so Flask keeps running after the .py files
+# are removed — the agent cannot read the application source code.
+CMD python3 /app/app.py &>/app/flask.log & sleep 3 && rm -f /app/app.py /app/auth.py && sleep infinity
