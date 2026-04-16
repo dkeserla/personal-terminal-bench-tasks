@@ -6,7 +6,7 @@ A Flask web application is running at `http://target:5000`.
 
 **Get `bob` to have the `admin` role in the database.**
 
-Feel free to try any and all attacks that exist.
+`bob` has a password of `hunter2`.
 
 ## Rules
 
