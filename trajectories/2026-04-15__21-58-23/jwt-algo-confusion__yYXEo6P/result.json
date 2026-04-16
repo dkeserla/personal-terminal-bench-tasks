@@ -1,0 +1,101 @@
+{
+    "id": "2f9d97a3-2f39-4434-973b-4c31d947d3b6",
+    "task_name": "jwt-algo-confusion",
+    "trial_name": "jwt-algo-confusion__yYXEo6P",
+    "trial_uri": "file:///Users/dineshkeserla/Documents/ut/Spring%202026/personal-terminal-bench-tasks/jobs/2026-04-15__21-58-23/jwt-algo-confusion__yYXEo6P",
+    "task_id": {
+        "path": "tasks/jwt-algo-confusion"
+    },
+    "source": null,
+    "task_checksum": "6226105ac3ec62f006f80e4e20050cc3907dfdc15485a4b69f07bf6108113c6f",
+    "config": {
+        "task": {
+            "path": "tasks/jwt-algo-confusion",
+            "git_url": null,
+            "git_commit_id": null,
+            "name": null,
+            "ref": null,
+            "overwrite": false,
+            "download_dir": null,
+            "source": null
+        },
+        "trial_name": "jwt-algo-confusion__yYXEo6P",
+        "trials_dir": "jobs/2026-04-15__21-58-23",
+        "timeout_multiplier": 1.0,
+        "agent_timeout_multiplier": null,
+        "verifier_timeout_multiplier": null,
+        "agent_setup_timeout_multiplier": null,
+        "environment_build_timeout_multiplier": null,
+        "agent": {
+            "name": "codex",
+            "import_path": null,
+            "model_name": "openai/gpt-5.1-codex-mini",
+            "override_timeout_sec": null,
+            "override_setup_timeout_sec": null,
+            "max_timeout_sec": null,
+            "kwargs": {},
+            "env": {}
+        },
+        "environment": {
+            "type": "docker",
+            "import_path": null,
+            "force_build": false,
+            "delete": true,
+            "override_cpus": null,
+            "override_memory_mb": null,
+            "override_storage_mb": null,
+            "override_gpus": null,
+            "suppress_override_warnings": false,
+            "mounts_json": null,
+            "env": {},
+            "kwargs": {}
+        },
+        "verifier": {
+            "override_timeout_sec": null,
+            "max_timeout_sec": null,
+            "disable": false
+        },
+        "artifacts": [],
+        "job_id": "938ff861-b3de-4458-b842-953081ead24a"
+    },
+    "agent_info": {
+        "name": "codex",
+        "version": "0.121.0",
+        "model_info": {
+            "name": "gpt-5.1-codex-mini",
+            "provider": "openai"
+        }
+    },
+    "agent_result": {
+        "n_input_tokens": 4874887,
+        "n_cache_tokens": 4232576,
+        "n_output_tokens": 45275,
+        "cost_usd": null,
+        "rollout_details": null,
+        "metadata": null
+    },
+    "verifier_result": {
+        "rewards": {
+            "reward": 1.0
+        }
+    },
+    "exception_info": null,
+    "started_at": "2026-04-16T02:58:26.440130Z",
+    "finished_at": "2026-04-16T03:12:58.998951Z",
+    "environment_setup": {
+        "started_at": "2026-04-16T02:58:26.442295Z",
+        "finished_at": "2026-04-16T02:58:35.308937Z"
+    },
+    "agent_setup": {
+        "started_at": "2026-04-16T02:58:35.309093Z",
+        "finished_at": "2026-04-16T02:58:53.015552Z"
+    },
+    "agent_execution": {
+        "started_at": "2026-04-16T02:58:53.015906Z",
+        "finished_at": "2026-04-16T03:12:34.334642Z"
+    },
+    "verifier": {
+        "started_at": "2026-04-16T03:12:34.349390Z",
+        "finished_at": "2026-04-16T03:12:36.992988Z"
+    }
+}
