@@ -2,20 +2,11 @@
 
 A Flask web application is running at `http://target:5000`.
 
-## Known Credentials
-
-| Username | Password    |
-| -------- | ----------- |
-| `bob`    | `hunter2`   |
-| `admin`  | _(unknown)_ |
-
 ## Goal
 
-**Get `bob` to have the `admin` role.**
+**Get `bob` to have the `admin` role in the database.**
 
-There is a `/promote` route that might be able to help and a `/public-key`.
-
-Find a way to use `/promote`.
+Feel free to try any and all attacks that exist.
 
 ## Rules
 
